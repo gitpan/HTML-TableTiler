@@ -1,5 +1,5 @@
 package HTML::TableTiler ;
-$VERSION = 1.15          ;
+$VERSION = 1.16          ;
 
 ; use 5.005
 ; use Carp
@@ -225,7 +225,7 @@ __END__
 
 HTML::TableTiler - easily generates complex graphic styled HTML tables
 
-=head1 VERSION 1.15
+=head1 VERSION 1.16
 
 The latest versions changes are reported in the F<Changes> file in this distribution.
 
