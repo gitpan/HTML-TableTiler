@@ -1,6 +1,6 @@
 =head1 NAME
 
-HTML::TableTiler - easily generates graphic styled HTML tables
+HTML::TableTiler - easily generates complex graphic styled HTML tables
 
 =head1 SYNOPSIS
 
@@ -83,17 +83,31 @@ You can indipendently change the table tile or the code, and everything will go 
 
 =back
 
-=head1 PREREQUISITES
+=head2 Installation
 
 =over
 
-=item * perl >= 5.005
+=item Prerequisites
 
-=item * HTML::PullParser >= 1.0
+    Perl version >= 5.005
+    HTML::PullParser >= 1.0
+
+=item Standard installation
+
+From the directory where this file is located, type:
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+=item Manual installation
+
+If your OS does not have any 'make' support, just copy the content of the /lib dir into perl installation site dir, maintaining the same hierarchy.
 
 =back
 
-=head2 HTML Examples
+=head1 HTML Examples
 
 Below this paragraph you should see several HTML examples. If you don't see any example, please take a look at the F<Examples.html> file included in this distribution: an image is worth thousands of words (expecially with HTML)!
 
