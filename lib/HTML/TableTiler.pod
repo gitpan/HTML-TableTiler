@@ -588,6 +588,8 @@ L<HTML::MagicTemplate|HTML::MagicTemplate>, that supplies an extended and transp
 
 =head1 SUPPORT and FEEDBACK
 
+More information at http://perl.4pro.net/?HTML::TableTiler.
+
 I would like to have just a line of feedback from everybody who tries or actually uses this software. Feel free to write me any comment, suggestion or request.
 
 =head1 AUTHOR
