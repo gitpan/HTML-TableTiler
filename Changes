@@ -1,0 +1,8 @@
+HTML::TableTiler Latest Versions Changes
+
+
+Version 1.15
+- Eliminated the 'constant.pm' dependency
+- Added prerequisite IO::Util 1.2
+- Some internal changes
+

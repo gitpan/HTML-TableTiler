@@ -1,7 +1,7 @@
 ; use ExtUtils::MakeMaker
 
 ; my $dist =  'HTML::TableTiler'
-; my $vers = '1.14'
+; my $vers = '1.15'
 
 ; WriteMakefile
    ( NAME           => $dist
@@ -11,7 +11,9 @@
        , ABSTRACT   => 'Easily generates graphic styled HTML tables'
        )
      : ()
-   , PREREQ_PM	     => { 'HTML::PullParser' => '1.0' }
+   , PREREQ_PM	     => { 'HTML::PullParser' => '1.0'
+                       , 'IO::Util'         => '1.2'
+                       }
    )
 
 

@@ -1,52 +1,33 @@
 package HTML::TableTiler ;
-$VERSION = 1.14          ;
+$VERSION = 1.15          ;
 
 ; use 5.005
 ; use Carp
 ; use HTML::PullParser 1.0
+; use IO::Util 1.2
 ; use Exporter ()
 ; @ISA       = qw| Exporter |
 ; @EXPORT_OK = qw| tile_table |
 ; use strict
-; use constant PULL  => 'PULL'
-; use constant TILE  => 'TILE'
-; use constant TRIM  => 'TRIM'
-; use constant TRUE  => 1
-; use constant FALSE => 0
-; use constant RESET => 0
+
+; BEGIN
+   { *PULL  = sub () { 'PULL' }
+   ; *TILE  = sub () { 'TILE' }
+   ; *TRIM  = sub () { 'TRIM' }
+   ; *TRUE  = sub () { 1 }
+   ; *FALSE = sub () { 0 }
+   ; *RESET = sub () { 0 }
+   }
 
 ; sub new
    { my $c = shift
-   ; my $s = _parse_table(&_read_tile)
+   ; my $t = shift || \ '<table><tr><td></td></tr></table>'
+   ; $t = IO::Util::slurp($t)
+          unless ref $t eq 'SCALAR'
+   ; $$t or  croak 'The tile content is empty'
+   ; my $s = _parse_table($t)
    ; bless $s, $c
    }
-
-; sub _read_tile
-   { local $_ = shift ||  \ '<table><tr><td></td></tr></table>'
-   ; if ( ref eq 'SCALAR')
-      { $_ = $$_
-      }
-     elsif (  ref     eq 'GLOB'
-           || ref \$_ eq 'GLOB'
-           )
-      { $_ = do { local $/
-                ; <$_>
-                }
-      }
-     elsif ( $_ && not ref)
-      { open _
-        or croak "Error opening the file \"$_\": ($^E)"
-      ; $_ = do { local $/
-                ; <_>
-                }
-      ; close _
-      }
-     else
-      { croak 'Wrong tile parameter type: '. (ref||'UNDEF')
-      }
-   ; $_ or croak 'The tile content is empty';
-   }
-  
 
 ; sub _parse_table
    { my ( $content ) = shift
@@ -54,7 +35,7 @@ $VERSION = 1.14          ;
         , $Hrows
         , $end
         )
-        = $content =~ m| ^
+        = $$content =~ m| ^
                          (.*?)                    # start
                          ( <TR[^>]*?> .* </TR> )  # Hrows
                          (.*)                     # end
@@ -82,37 +63,40 @@ $VERSION = 1.14          ;
      = my $in_td
      = RESET
      )
+   ; my $err = sub
+                { croak "Unespected HTML tag $_[0] found in the tile"
+                }
    ; while ( my $tok = $p->get_token )
       { my ( $tag, $text ) = @$tok
       ; if ( $tag eq 'tr' )
-         { ( not $in_tr and not $in_td ) or _illegal_tag($text)
-         ; $rows->[$ri]{Srow} = $text
+         { ( not $in_tr and not $in_td ) or $err->($text)
+         ; $$rows[$ri]{Srow} = $text
          ; $in_tr = TRUE
          }
         elsif ( $tag eq '/tr')
-         { ( $in_tr and not $in_td) or _illegal_tag($text)
-         ; $rows->[$ri++]{Erow} = $text
+         { ( $in_tr and not $in_td) or $err->($text)
+         ; $$rows[$ri++]{Erow} = $text
          ; $in_tr = FALSE
          ; $di    = FALSE
          }
         elsif ( $tag eq 'td' )
-         { ($in_tr and not $in_td) or _illegal_tag($text)
-         ; $rows->[$ri]{cells}[$di]{Scell} = $text
+         { ($in_tr and not $in_td) or $err->($text)
+         ; $$rows[$ri]{cells}[$di]{Scell} = $text
          ; $in_td = TRUE
          }
         elsif ( $tag eq '/td' )
-         { ($in_tr and $in_td) or _illegal_tag($text)
-         ; $rows->[$ri]{cells}[$di++]{Ecell} .= $text
+         { ($in_tr and $in_td) or $err->($text)
+         ; $$rows[$ri]{cells}[$di++]{Ecell} .= $text
          ; $in_td = FALSE
          ; $td++
          }
         elsif ( $tag !~ m|^/| )
-         { ($in_tr and $in_td) or _illegal_tag($text)
-         ; $rows->[$ri]{cells}[$di]{Scell} .= $text if $in_td
+         { ($in_tr and $in_td) or $err->($text)
+         ; $$rows[$ri]{cells}[$di]{Scell} .= $text if $in_td
          }
         elsif ( $tag =~ m|^/| )
-         { ( $in_tr and $in_td ) or _illegal_tag($text)
-         ; $rows->[$ri]{cells}[$di]{Ecell} .= $text if $in_td
+         { ( $in_tr and $in_td ) or $err->($text)
+         ; $$rows[$ri]{cells}[$di]{Ecell} .= $text if $in_td
          }
       }
    ; $td or croak 'The tile does not contain any "<td>...</td>" area'
@@ -120,10 +104,6 @@ $VERSION = 1.14          ;
             , rows  => $rows
             , end   => $end
             }
-   }
-
-; sub _illegal_tag
-   { croak "Unespected HTML tag $_[0] found in the tile"
    }
 
 ; sub is_matrix
@@ -198,8 +178,8 @@ $VERSION = 1.14          ;
          }
       ; $out .= $s->{rows}[$tmi]{Srow}
               . "\n"
-      ; my $data_cells = $data_matrix->[$dmi]
-      ; my $html_cells = $s->{rows}->[$tmi]{cells}
+      ; my $data_cells = $$data_matrix[$dmi]
+      ; my $html_cells = $$s{rows}[$tmi]{cells}
       
       ; CELL:
         for ( ( my $di
@@ -224,17 +204,17 @@ $VERSION = 1.14          ;
                }
             }
          ; $out .= "\t"
-                 . $html_cells->[$ti]{Scell}
-                 . $data_cells->[$di]
-                 . $html_cells->[$ti]{Ecell}
+                 . $$html_cells[$ti]{Scell}
+                 . $$data_cells[$di]
+                 . $$html_cells[$ti]{Ecell}
                  . "\n"
          }
-      ; $out .= $s->{rows}[$tmi]{Erow}
+      ; $out .= $$s{rows}[$tmi]{Erow}
               . "\n"
       }
-   ; return $s->{start}
+   ; return $$s{start}
           . $out
-          . $s->{end}
+          . $$s{end}
    }
 
 ; 1
@@ -245,7 +225,33 @@ __END__
 
 HTML::TableTiler - easily generates complex graphic styled HTML tables
 
-=head1 VERSION 1.14
+=head1 VERSION 1.15
+
+The latest versions changes are reported in the F<Changes> file in this distribution.
+
+=head1 INSTALLATION
+
+=over
+
+=item Prerequisites
+
+    HTML::PullParser >= 1.0
+    IO::Util         >= 1.2
+
+=item CPAN
+
+    perl -MCPAN -e 'install HTML::TableTiler'
+
+=item Standard installation
+
+From the directory where this file is located, type:
+
+    perl Makefile.PL
+    make
+    make test
+    make install
+
+=back
 
 =head1 SYNOPSIS
 
@@ -336,6 +342,7 @@ You can indipendently change the table tile or the code, and everything will go 
 
     Perl version     >= 5.005
     HTML::PullParser >= 1.0
+    IO::Util         >= 1.2
 
 =item Standard installation
 
