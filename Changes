@@ -1,5 +1,7 @@
 HTML::TableTiler Latest Versions Changes
 
+Version 1.19
+- Added a note in the Makefile.PL
 
 Version 1.18
 - Eliminated version check and installation feedback system
