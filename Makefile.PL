@@ -3,15 +3,14 @@
 
 ; use ExtUtils::MakeMaker
 
-; my $dist =  'HTML::TableTiler'
-; my $vers = '1.19'
+; my $pm = 'lib/HTML/TableTiler.pm'
 
 ; WriteMakefile
-   ( NAME           => $dist
-   , VERSION        => $vers
+   ( NAME           => 'HTML::TableTiler'
+   , VERSION_FROM   => $pm
    , ($] ge '5.005')
-     ? ( AUTHOR     => 'Domizio Demichelis - perl.4pro.net'
-       , ABSTRACT   => 'Easily generates graphic styled HTML tables'
+     ? ( AUTHOR        => 'Domizio Demichelis - perl.4pro.net'
+       , ABSTRACT_FROM => $pm
        )
      : ()
    , PREREQ_PM	     => { 'HTML::PullParser' => '1.0'
@@ -23,8 +22,3 @@
 ; 1
 
 
-__END__
-
-Note: While I did removed the "phone home opt-out only logic" from all my distributions since 2004-24-06, the related ratings have not been removed so far. Sorry for the inconvenience.
-
-Domizio Demichelis

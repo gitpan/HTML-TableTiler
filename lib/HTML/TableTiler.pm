@@ -1,5 +1,5 @@
 package HTML::TableTiler ;
-$VERSION = 1.19          ;
+$VERSION = 1.2          ;
 
 # This file uses the "Perlish" coding style
 # please read http://perl.4pro.net/perlish_coding_style.html
@@ -228,7 +228,7 @@ __END__
 
 HTML::TableTiler - easily generates complex graphic styled HTML tables
 
-=head1 VERSION 1.19
+=head1 VERSION 1.2
 
 The latest versions changes are reported in the F<Changes> file in this distribution.
 
