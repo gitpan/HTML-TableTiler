@@ -1,6 +1,11 @@
 HTML::TableTiler Latest Versions Changes
 
 
+Version 1.18
+- Eliminated version check and installation feedback system
+  ("phone home" opt-out) from Makefile.PL to make Randal L Schwartz happy :-)
+  and sad the author :-(
+
 Version 1.17
 - Minor POD changes
 
