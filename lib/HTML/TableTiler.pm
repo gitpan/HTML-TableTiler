@@ -1,5 +1,5 @@
 package HTML::TableTiler      ;
-$VERSION = 1.06               ;
+$VERSION = 1.07               ;
 use 5.005                     ;
 use Carp qw ( croak )         ;
 use HTML::PullParser 1.0      ;
@@ -163,6 +163,8 @@ __END__
 =head1 NAME
 
 HTML::TableTiler - easily generates complex graphic styled HTML tables
+
+=head1 VERSION 1.07
 
 =head1 SYNOPSIS
 
@@ -757,9 +759,6 @@ I would like to have just a line of feedback from everybody who tries or actuall
 =head1 AUTHOR
 
 Domizio Demichelis, <dd@4pro.net>.
-
-=for html
-<img src="http://perl.4pro.net/bug?HTML::TableTiler" height="1" width="1" border="0">
 
 =head1 COPYRIGHT
 
