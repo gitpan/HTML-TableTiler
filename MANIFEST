@@ -1,9 +1,8 @@
 Examples.html
-MANIFEST
+MANIFEST			This list of files
 Makefile.PL
 README
 lib/HTML/TableTiler.pm
-lib/HTML/TableTiler.pod
 t/01_default_tile.t
 t/02_custom_tile.t
 t/03_custom_modes.t
