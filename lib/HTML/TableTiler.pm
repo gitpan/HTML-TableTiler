@@ -1,5 +1,5 @@
 package HTML::TableTiler;
-$VERSION = '1.0';
+$VERSION = '1.01';
 use 5.005;
 use Carp qw ( croak );
 use HTML::PullParser 1.0;

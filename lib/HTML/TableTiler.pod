@@ -83,6 +83,16 @@ You can indipendently change the table tile or the code, and everything will go 
 
 =back
 
+=head1 PREREQUISITES
+
+=over
+
+=item * perl >= 5.005
+
+=item * HTML::PullParser >= 1.0
+
+=back
+
 =head2 HTML Examples
 
 Below this paragraph you should see several HTML examples. If you don't see any example, please take a look at the F<Examples.html> file included in this distribution: an image is worth thousands of words (expecially with HTML)!
