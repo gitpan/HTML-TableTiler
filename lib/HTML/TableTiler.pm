@@ -1,8 +1,8 @@
 package HTML::TableTiler ;
-$VERSION = 1.13          ;
+$VERSION = 1.14          ;
 
 ; use 5.005
-; use Carp qw| croak |
+; use Carp
 ; use HTML::PullParser 1.0
 ; use Exporter ()
 ; @ISA       = qw| Exporter |
@@ -126,38 +126,46 @@ $VERSION = 1.13          ;
    { croak "Unespected HTML tag $_[0] found in the tile"
    }
 
+; sub is_matrix
+   { my ($data_matrix) = shift
+   # bi-dimensional array check
+   ; foreach my $dr ( @$data_matrix )
+     { if ( ref $dr eq 'ARRAY' )
+        { foreach my $d ( @$dr )
+           { return 0 if ref $d
+           }
+        }
+       else
+        { return 0
+        }
+     }
+   ; return 1
+   }
+   
 ; sub tile_table
    { my ( $s
         , $data_matrix
         , $tile
         , $mode
+        , $checked
         )
    ; if (  length(ref $_[0])             # blessed obj
         && eval { $_[0]->isa(ref $_[0]) }
         )
-      { ( $s, $data_matrix, $mode) = @_
+      { ( $s, $data_matrix, $mode, $checked) = @_
       }
      else
-      { ( $data_matrix, $tile, $mode ) = @_
+      { ( $data_matrix, $tile, $mode, $checked ) = @_
       ; $s = __PACKAGE__->new($tile)
       ; undef $tile
       }
+   
    ; $mode ||= 'H_PULL V_PULL'
-   # bi-dimensional array check
-   ; foreach my $dr ( @$data_matrix )
-     { if ( ref $dr eq 'ARRAY' )
-        { foreach my $d ( @$dr )
-           { if ( ref $d )
-              { croak 'Wrong data matrix content: '
-                     .'a cell cannot contain a reference'
-              }
-           }
-        }
-       else
-        { croak 'Wrong data matrix content: '
-               .'a row must be a reference to an array'
-        }
-     }
+
+   ; $checked
+     || is_matrix($data_matrix)
+     || croak 'Wrong data matrix content'
+   
    # set Hmode and Vmode
    ; my $m = qr/(PULL|TILE|TRIM)/
    ; my ($Hmode) = $mode =~ /\b H_ $m \b/x ; $Hmode ||= PULL
@@ -237,7 +245,7 @@ __END__
 
 HTML::TableTiler - easily generates complex graphic styled HTML tables
 
-=head1 VERSION 1.13
+=head1 VERSION 1.14
 
 =head1 SYNOPSIS
 
@@ -747,8 +755,12 @@ Examples of constructors:
     $tt = HTML::TableTiler->new( *TABLE_TILE_FILEHANDLER );
     $tt = HTML::TableTiler->new(); # default \'<table><tr><td></td></tr></table>'
 
+=item is_matrix( array_reference )
 
-=item tile_table ( matrix [, mode ] )
+This method checks if the passed I<array_reference> is a matrix (i.e. an array of arrays). It returns C<1> on success and C<0> on failure. It is called automatically by the C<tile_table()> method unless you pass a true value as tird argument.
+
+
+=item tile_table ( matrix [, mode ] [, checked] )
 
 This method generates a tiled table including the data contained in I<matrix>. The I<matrix> parameter must be a reference to a bidimensional array:
 
@@ -796,6 +808,8 @@ Examples:
 
 Different combinations of I<tiling modes> and I<tiles> can easily produce complex tiled tables. (See L<"HTML Examples"> or the F<Examples.html> file for details.)
 
+A true I<checked> argument avoid the C<is_matrix> method to be internally called.
+
 =back
 
 =head1 FUNCTIONS
@@ -825,16 +839,10 @@ L<Template::Magic::HTML|Template::Magic::HTML>, that supplies an extended and tr
 
 =head1 SUPPORT and FEEDBACK
 
-I would like to have just a line of feedback from everybody who tries or actually uses this module. PLEASE, write me any comment, suggestion or request. ;-)
-
-More information at http://perl.4pro.net/?HTML::TableTiler.
+If you need support or if you want just to send me some feedback or request, please use this link: http://perl.4pro.net/?HTML::TableTiler.
 
 =head1 AUTHOR and COPYRIGHT
 
 © 2002-2004 by Domizio Demichelis.
 
 All Rights Reserved. This module is free software. It may be used, redistributed and/or modified under the same terms as perl itself.
-
-=head1 CONTRIBUTION
-
-I always answer to each and all the message i receive from users, but I have almost no time to find, install and organize a mailing list software that could improve a lot the support to people that use my modules. Besides I have too little time to write more detailed documentation, more examples and tests. Your contribution would be precious, so if you can and want to help, just contact me. Thank you in advance.

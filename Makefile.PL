@@ -1,7 +1,7 @@
 ; use ExtUtils::MakeMaker
 
 ; my $dist =  'HTML::TableTiler'
-; my $vers = '1.13'
+; my $vers = '1.14'
 
 ; WriteMakefile
    ( NAME           => $dist
