@@ -1,162 +1,235 @@
-package HTML::TableTiler      ;
-$VERSION = 1.07               ;
-use 5.005                     ;
-use Carp qw ( croak )         ;
-use HTML::PullParser 1.0      ;
-use Exporter ()               ;
-@ISA       = qw( Exporter )   ;
-@EXPORT_OK = qw( tile_table ) ;
-use strict                    ;
+package HTML::TableTiler ;
+$VERSION = 1.11          ;
 
-sub new
-{
-  my $c = shift;
-  my $s = _parse_table(&_read_tile);
-  bless $s, $c;
-}
+; use 5.005
+; use Carp qw| croak |
+; use HTML::PullParser 1.0
+; use Exporter ()
+; @ISA       = qw| Exporter |
+; @EXPORT_OK = qw| tile_table |
+; use strict
+; use constant PULL  => 'PULL'
+; use constant TILE  => 'TILE'
+; use constant TRIM  => 'TRIM'
+; use constant TRUE  => 1
+; use constant FALSE => 0
+; use constant RESET => 0
 
-sub _read_tile
-{
-  local $_ = shift ||  \ '<table><tr><td></td></tr></table>' ;
-  if    (ref eq 'SCALAR') { $_ = $$_ }
-  elsif (ref eq 'GLOB' || ref  \$_ eq 'GLOB') { $_ = do{local $/; <$_>} }
-  elsif ($_ && !ref) { open _ or croak "Error opening the file \"$_\": ($^E)" ;
-                       $_ = do{local $/; <_>}; close _ }
-  else  { croak 'Wrong tile parameter type: '. (ref||'UNDEF') }
-  $_ or croak 'The tile content is empty';
-}
-  
+; sub new
+   { my $c = shift
+   ; my $s = _parse_table(&_read_tile)
+   ; bless $s, $c
+   }
 
-sub _parse_table
-{
-  my ($content)  = shift ;
-  my ($p, $rows, $ri, $di, $ignore, $td, $in_tr, $in_td) ;
-  my ($start, $Hrows, $end) = $content =~ m|^(.*?)
-                                             ( <TR[^>]*?> .* </TR> )
-                                             (.*)$|xsi;
-  $Hrows or croak 'The tile does not contain any "<tr>...</tr>" area';
-  eval {
-         local $SIG{__DIE__} ;
-         $p = HTML::PullParser->new( doc   => $Hrows,
-                                     start => 'tag, text',
-                                     end   => 'tag, text'  ) ;
-       } ;
-  if ($@) { croak "Problem with the HTML parser: $@" }
-  
-  while ( my $tok = $p->get_token )
-  {
-    my ($tag, $text) = @$tok;
-    if    ($tag eq "tr")
-    {
-      (not $in_tr and not $in_td) or _illegal_tag($text);
-      $rows->[$ri]{Srow} = $text;
-      $in_tr = 1;
-    }
-    elsif ($tag eq "/tr")
-    {
-      ($in_tr and not $in_td) or _illegal_tag($text);
-      $rows->[$ri++]{Erow} = $text;
-      $in_tr = 0;
-      $di = 0;
-    }
-    elsif ($tag eq "td")
-    {
-      ($in_tr and not $in_td) or _illegal_tag($text);
-      $rows->[$ri]{cells}[$di]{Scell} = $text;
-      $in_td = 1;
-    }
-    elsif ($tag eq "/td" )
-    {
-      ($in_tr and $in_td) or _illegal_tag($text) ;
-      $rows->[$ri]{cells}[$di++]{Ecell} .= $text;
-      $in_td = 0;
-      $td++;
-    }
-    elsif ($tag !~ m|^/| )
-    {
-      ($in_tr and $in_td) or _illegal_tag($text) ;
-      $rows->[$ri]{cells}[$di]{Scell} .= $text if $in_td
-    }
-    elsif ($tag =~ m|^/|)
-    {
-      ($in_tr and $in_td) or _illegal_tag($text) ;
-      $rows->[$ri]{cells}[$di]{Ecell} .= $text if $in_td
-    }
-  }
-  $td or croak 'The tile does not contain any "<td>...</td>" area' ;
-  
-  { start => $start ,
-    rows  => $rows  ,
-    end   => $end   }
-}
-
-sub _illegal_tag { croak "Unespected HTML tag $_[0] found in the tile" }
-
-sub tile_table
-{
-  my ($s, $data_matrix, $tile, $mode) ;
-  if ( length(ref $_[0]) && eval { $_[0]->isa(ref $_[0]) } ) # blessed obj
-  {
-    ($s, $data_matrix, $mode)    = @_
-  }
-  else
-  {
-    ($data_matrix, $tile, $mode) = @_ ;
-    $s = __PACKAGE__->new($tile)      ;
-    undef $tile
-  }
-  # bi-dimensional array check
-  for ( @$data_matrix )
-  {
-    if   ( ref eq 'ARRAY' )
-    {
-      for (@$_)
-      {
-        croak 'Wrong data matrix content: '
-            . 'a cell cannot contain a reference' if ref
+; sub _read_tile
+   { local $_ = shift ||  \ '<table><tr><td></td></tr></table>'
+   ; if ( ref eq 'SCALAR')
+      { $_ = $$_
       }
-    }
-    else
-    {
-      croak 'Wrong data matrix content: '
-          . 'a row must be a reference to an array'
-    }
-  }
-
-  # set Hmode and Vmode
-  my $m = qr/(PULL|TILE|TRIM)/;
-  my ($Hmode) = $mode =~ /\b H_ $m \b/x ; $Hmode ||= 'PULL' ;
-  my ($Vmode) = $mode =~ /\b V_ $m \b/x ; $Vmode ||= 'PULL' ;
-  # spread table
-  my $out = "\n" ;
-  ROW: for (my ($dmi, $tmi) ; $dmi <= $#$data_matrix ; $dmi++, $tmi++)
-  {
-    if ($tmi > $#{$s->{rows}})
-    {
-      if    ($Vmode eq 'PULL') { $tmi = $#{$s->{rows}} }
-      elsif ($Vmode eq 'TILE') { $tmi = 0              }
-      elsif ($Vmode eq 'TRIM') { last ROW              }
-    }
-    $out .= $s->{rows}[$tmi]{Srow} . "\n" ;
-    my $data_cells = $data_matrix->[$dmi] ;
-    my $html_cells = $s->{rows}->[$tmi]{cells} ;
-    CELL: for (my ($di, $ti) ; $di <= $#$data_cells ; $di++, $ti++)
-    {
-      if ($ti > $#$html_cells)
-      {
-        if    ($Hmode eq 'PULL') { $ti = $#$html_cells }
-        elsif ($Hmode eq 'TILE') { $ti = 0             }
-        elsif ($Hmode eq 'TRIM') { last CELL           }
+     elsif (  ref     eq 'GLOB'
+           || ref \$_ eq 'GLOB'
+           )
+      { $_ = do { local $/
+                ; <$_>
+                }
       }
-      $out .= "\t" . $html_cells->[$ti]{Scell}
-              . $data_cells->[$di] . $html_cells->[$ti]{Ecell} . "\n";
-    }
-    $out .= $s->{rows}[$tmi]{Erow} . "\n" ;
-  }
-  $s->{start} . $out . $s->{end};
-}
+     elsif ( $_ && not ref)
+      { open _
+        or croak "Error opening the file \"$_\": ($^E)"
+      ; $_ = do { local $/
+                ; <_>
+                }
+      ; close _
+      }
+     else
+      { croak 'Wrong tile parameter type: '. (ref||'UNDEF')
+      }
+   ; $_ or croak 'The tile content is empty';
+   }
+  
 
-1;
+; sub _parse_table
+   { my ( $content ) = shift
+   ; my ( $start
+        , $Hrows
+        , $end
+        )
+        = $content =~ m| ^
+                         (.*?)                    # start
+                         ( <TR[^>]*?> .* </TR> )  # Hrows
+                         (.*)                     # end
+                         $
+                       |xsi
+   ; my ( $p
+        , $rows
+        , $ignore
+        )
+   ; $Hrows or croak 'The tile does not contain any "<tr>...</tr>" area'
+   ; eval
+      { local $SIG{__DIE__}
+      ; $p = HTML::PullParser->new( doc   => $Hrows
+                                  , start => 'tag, text',
+                                  , end   => 'tag, text'
+                                  )
+      }
+   ; if ($@)
+      { croak "Problem with the HTML parser: $@"
+      }
+   ; ( my $ri
+     = my $di
+     = my $td
+     = my $in_tr
+     = my $in_td
+     = RESET
+     )
+   ; while ( my $tok = $p->get_token )
+      { my ( $tag, $text ) = @$tok
+      ; if ( $tag eq 'tr' )
+         { ( not $in_tr and not $in_td ) or _illegal_tag($text)
+         ; $rows->[$ri]{Srow} = $text
+         ; $in_tr = TRUE
+         }
+        elsif ( $tag eq '/tr')
+         { ( $in_tr and not $in_td) or _illegal_tag($text)
+         ; $rows->[$ri++]{Erow} = $text
+         ; $in_tr = FALSE
+         ; $di    = FALSE
+         }
+        elsif ( $tag eq 'td' )
+         { ($in_tr and not $in_td) or _illegal_tag($text)
+         ; $rows->[$ri]{cells}[$di]{Scell} = $text
+         ; $in_td = TRUE
+         }
+        elsif ( $tag eq '/td' )
+         { ($in_tr and $in_td) or _illegal_tag($text)
+         ; $rows->[$ri]{cells}[$di++]{Ecell} .= $text
+         ; $in_td = FALSE
+         ; $td++
+         }
+        elsif ( $tag !~ m|^/| )
+         { ($in_tr and $in_td) or _illegal_tag($text)
+         ; $rows->[$ri]{cells}[$di]{Scell} .= $text if $in_td
+         }
+        elsif ( $tag =~ m|^/| )
+         { ( $in_tr and $in_td ) or _illegal_tag($text)
+         ; $rows->[$ri]{cells}[$di]{Ecell} .= $text if $in_td
+         }
+      }
+   ; $td or croak 'The tile does not contain any "<td>...</td>" area'
+   ; return { start => $start
+            , rows  => $rows
+            , end   => $end
+            }
+   }
+
+; sub _illegal_tag
+   { croak "Unespected HTML tag $_[0] found in the tile"
+   }
+
+; sub tile_table
+   { my ( $s
+        , $data_matrix
+        , $tile
+        , $mode
+        )
+   ; if (  length(ref $_[0])             # blessed obj
+        && eval { $_[0]->isa(ref $_[0]) }
+        )
+      { ( $s, $data_matrix, $mode) = @_
+      }
+     else
+      { ( $data_matrix, $tile, $mode ) = @_
+      ; $s = __PACKAGE__->new($tile)
+      ; undef $tile
+      }
+   ; $mode ||= 'H_PULL V_PULL'
+   # bi-dimensional array check
+   ; foreach my $dr ( @$data_matrix )
+     { if ( ref $dr eq 'ARRAY' )
+        { foreach my $d ( @$dr )
+           { if ( ref $d )
+              { croak 'Wrong data matrix content: '
+                     .'a cell cannot contain a reference'
+              }
+           }
+        }
+       else
+        { croak 'Wrong data matrix content: '
+               .'a row must be a reference to an array'
+        }
+     }
+   # set Hmode and Vmode
+   ; my $m = qr/(PULL|TILE|TRIM)/
+   ; my ($Hmode) = $mode =~ /\b H_ $m \b/x ; $Hmode ||= PULL
+   ; my ($Vmode) = $mode =~ /\b V_ $m \b/x ; $Vmode ||= PULL
+
+   # spread table
+   ; my $out = "\n"
+   
+   ; ROW:
+     for ( ( my $dmi
+           = my $tmi
+           = RESET
+           )
+         ; $dmi <= $#$data_matrix 
+         ; ( $dmi ++
+           , $tmi ++
+           )
+         )
+      { if ( $tmi > $#{$s->{rows}} )
+         {
+           if    ( $Vmode eq PULL )
+            { $tmi = $#{$s->{rows}}
+            }
+           elsif ( $Vmode eq TILE )
+            { $tmi = RESET
+            }
+           elsif ( $Vmode eq TRIM )
+           { last ROW
+           }
+         }
+      ; $out .= $s->{rows}[$tmi]{Srow}
+              . "\n"
+      ; my $data_cells = $data_matrix->[$dmi]
+      ; my $html_cells = $s->{rows}->[$tmi]{cells}
+      
+      ; CELL:
+        for ( ( my $di
+              = my $ti
+              = RESET
+              )
+            ; $di <= $#$data_cells
+            ; ( $di ++
+              , $ti ++
+              )
+            )
+         { if ( $ti > $#$html_cells )
+            {
+              if    ( $Hmode eq PULL )
+               { $ti = $#$html_cells
+               }
+              elsif ( $Hmode eq TILE )
+               { $ti = RESET
+               }
+              elsif ( $Hmode eq TRIM )
+               { last CELL
+               }
+            }
+         ; $out .= "\t"
+                 . $html_cells->[$ti]{Scell}
+                 . $data_cells->[$di]
+                 . $html_cells->[$ti]{Ecell}
+                 . "\n"
+         }
+      ; $out .= $s->{rows}[$tmi]{Erow}
+              . "\n"
+      }
+   ; return $s->{start}
+          . $out
+          . $s->{end}
+   }
+
+; 1
 
 __END__
 
@@ -164,7 +237,7 @@ __END__
 
 HTML::TableTiler - easily generates complex graphic styled HTML tables
 
-=head1 VERSION 1.07
+=head1 VERSION 1.11
 
 =head1 SYNOPSIS
 

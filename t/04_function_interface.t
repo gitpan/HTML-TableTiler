@@ -1,13 +1,12 @@
-## 1
-
-use Test;
+#!perl -w
+use strict ;
+use Test::More tests => 1;
 use HTML::TableTiler qw(tile_table);
-BEGIN {  plan tests => 1 }
 
 
-$matrix = [[1..5],[6..10],[11..15]];
+my $matrix = [[1..5],[6..10],[11..15]];
 
-$expected = << '__EOT__';
+my $expected = << '__EOT__';
 <table border="0" cellspacing="1" cellpadding="3">
 
 <tr>
@@ -36,9 +35,9 @@ $expected = << '__EOT__';
 __EOT__
 
 
-$tiled_table = tile_table($matrix, *DATA, "V_TILE H_TILE");
+my $tiled_table = tile_table($matrix, *DATA, "V_TILE H_TILE");
 
-ok ($tiled_table, $expected);
+is ($tiled_table, $expected);
 
 __DATA__
 <table border="0" cellspacing="1" cellpadding="3">
