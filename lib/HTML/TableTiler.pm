@@ -1,5 +1,5 @@
 package HTML::TableTiler ;
-$VERSION = 1.11          ;
+$VERSION = 1.12          ;
 
 ; use 5.005
 ; use Carp qw| croak |
@@ -237,7 +237,7 @@ __END__
 
 HTML::TableTiler - easily generates complex graphic styled HTML tables
 
-=head1 VERSION 1.11
+=head1 VERSION 1.12
 
 =head1 SYNOPSIS
 
@@ -821,24 +821,20 @@ Note that you have to pass the I<tile> as the optional second parameter, and the
 
 =head1 SEE ALSO
 
-L<HTML::MagicTemplate|HTML::MagicTemplate>, that supplies an extended and transparent interface to this module.
+L<Template::Magic::HTML|Template::Magic::HTML>, that supplies an extended and transparent interface to this module.
 
 =head1 SUPPORT and FEEDBACK
 
+I would like to have just a line of feedback from everybody who tries or actually uses this module. PLEASE, write me any comment, suggestion or request. ;-)
+
 More information at http://perl.4pro.net/?HTML::TableTiler.
 
-I would like to have just a line of feedback from everybody who tries or actually uses this software. Feel free to write me any comment, suggestion or request.
+=head1 AUTHOR and COPYRIGHT
 
-=head1 AUTHOR
+© 2002-2004 by Domizio Demichelis.
 
-Domizio Demichelis, <dd@4pro.net>.
+All Rights Reserved. This module is free software. It may be used, redistributed and/or modified under the same terms as perl itself.
 
-=head1 COPYRIGHT
+=head1 CONTRIBUTION
 
-Copyright (c)2002 Domizio Demichelis. All Rights Reserved. This is free software; it may be used freely and redistributed for free providing this copyright header remains part of the software. You may not charge for the redistribution of this software. Selling this code without Domizio Demichelis' written permission is expressly forbidden.
-
-This software may not be modified without first notifying the author (this is to enable me to track modifications). In all cases the copyright header should remain fully intact in all modifications.
-
-This code is provided on an "As Is'' basis, without warranty, expressed or implied. The author disclaims all warranties with regard to this software, including all implied warranties of merchantability and fitness, in no event shall the author, be liable for any special, indirect or consequential damages or any damages whatsoever including but not limited to loss of use, data or profits. By using this software you agree to indemnify the author from any liability that might arise from it is use. Should this code prove defective, you assume the cost of any and all necessary repairs, servicing, correction and any other costs arising directly or indrectly from it is use.
-
-The copyright notice must remain fully intact at all times. Use of this software or its output, constitutes acceptance of these terms.
+I always answer to each and all the message i receive from users, but I have almost no time to find, install and organize a mailing list software that could improve a lot the support to people that use my modules. Besides I have too little time to write more detailed documentation, more examples and tests. Your contribution would be precious, so if you can and want to help, just contact me. Thank you in advance.
