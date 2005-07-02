@@ -1,5 +1,8 @@
 HTML::TableTiler Latest Versions Changes
 
+Version 1.21
+- Maintainance release. A few minor changes
+
 Version 1.2
 - Removed the - now outdated - note in the Makefile.PL
 

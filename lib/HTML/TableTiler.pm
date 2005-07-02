@@ -1,5 +1,6 @@
 package HTML::TableTiler ;
-$VERSION = 1.2          ;
+$VERSION = 1.21 ;
+use strict ;
 
 # This file uses the "Perlish" coding style
 # please read http://perl.4pro.net/perlish_coding_style.html
@@ -8,10 +9,9 @@ $VERSION = 1.2          ;
 ; use Carp
 ; use HTML::PullParser 1.0
 ; use IO::Util 1.2
-; use Exporter ()
-; @ISA       = qw| Exporter |
-; @EXPORT_OK = qw| tile_table |
-; use strict
+; require Exporter 
+; @HTML::TableTiler::ISA = qw| Exporter |
+; @HTML::TableTiler::EXPORT_OK = qw| tile_table |
 
 ; BEGIN
    { *PULL  = sub () { 'PULL' }
@@ -224,11 +224,13 @@ $VERSION = 1.2          ;
 
 __END__
 
+=pod
+
 =head1 NAME
 
 HTML::TableTiler - easily generates complex graphic styled HTML tables
 
-=head1 VERSION 1.2
+=head1 VERSION 1.21
 
 The latest versions changes are reported in the F<Changes> file in this distribution.
 
@@ -334,31 +336,6 @@ Just prepare a simple table tile in your preferred WYSIWYG HTML editor and let t
 =item * simple to maintain
 
 You can indipendently change the table tile or the code, and everything will go as you would expect.
-
-=back
-
-=head2 Installation
-
-=over
-
-=item Prerequisites
-
-    Perl version     >= 5.005
-    HTML::PullParser >= 1.0
-    IO::Util         >= 1.2
-
-=item Standard installation
-
-From the directory where this file is located, type:
-
-    perl Makefile.PL
-    make
-    make test
-    make install
-
-=item Manual installation
-
-If your OS does not have any 'make' support, just copy the content of the /lib dir into perl installation site dir, maintaining the same hierarchy.
 
 =back
 
@@ -856,3 +833,5 @@ If you need support or if you want just to send me some feedback or request, ple
 © 2002-2004 by Domizio Demichelis.
 
 All Rights Reserved. This module is free software. It may be used, redistributed and/or modified under the same terms as perl itself.
+
+=cut
